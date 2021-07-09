@@ -3,16 +3,50 @@
   .main-container {
     height: 70vh;
     figure {
+      overflow: hidden;
+      &:hover {
+      }
       video::-webkit-media-controls {
         display: none !important;
       }
+
       figcaption {
         z-index: 99999999999999999999;
+
         .progress-container {
           .progress {
             height: 10px;
+            overflow: visible;
             .video-progress {
               transition: all 0.2s;
+              position: relative;
+              &:hover {
+                .tooltiptext {
+                  visibility: visible;
+                }
+              }
+              .tooltiptext {
+                background-color: black;
+                color: #fff;
+                text-align: center;
+                border-radius: 6px;
+                position: absolute;
+                z-index: 1;
+                bottom: 150%;
+                pointer-events: none;
+                right: -20px;
+                visibility: hidden;
+                &::after {
+                  content: "";
+                  position: absolute;
+                  top: 100%;
+                  left: 50%;
+                  margin-left: -5px;
+                  border-width: 5px;
+                  border-style: solid;
+                  border-color: black transparent transparent transparent;
+                }
+              }
             }
           }
         }
@@ -40,11 +74,6 @@
             }
           }
         }
-      }
-    }
-    figure[data-fullscreen="false"] {
-      figcaption {
-        z-index: 100000000000000;
       }
     }
   }

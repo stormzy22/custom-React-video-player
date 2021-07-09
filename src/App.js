@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 
 const App = memo(() => {
   const [playPause, setPlayPause] = useState(true);
+  const [vidCurrentTime, setVidCurrentTime] = useState("--");
+  const [vidDuration, setVidDuration] = useState("--");
 
   const vidRef = useRef();
   const play_Pause_Ref = useRef();
@@ -13,14 +15,8 @@ const App = memo(() => {
   const zoomRef = useRef();
   const containerRef = useRef();
   const [mute, setMute] = useState(false);
-  /*
-Start Ref
-*/
 
-  /**
-End REF 
-**/
-  useEffect(() => {
+  useEffect(() =>
     (function () {
       const vidState = vidRef.current;
       if (vidState.muted) {
@@ -28,9 +24,8 @@ End REF
       } else {
         setMute(false);
       }
-    })();
-  });
-
+    })()
+  );
   useEffect(() => {
     //Obtaining Handlers
     const video = vidRef.current;
@@ -41,13 +36,19 @@ End REF
     const vidProgressBar = vidProgressBarRef.current;
     const volMute = muteRef.current;
     const zoomBtn = zoomRef.current;
-
+    const containerExpand = containerRef.current;
     (function () {
       // Check if the browser actually support the video element?
       const supportsVideo = !!document.createElement("video").canPlayType;
       if (supportsVideo) {
         function updateProgress(e) {
           const { duration, currentTime } = e.srcElement;
+          const currentMin = Math.floor(currentTime / 60);
+          const currentSec = Math.floor(currentTime - currentMin * 60);
+          const durationMin = Math.floor(duration / 60);
+          const durationSec = Math.floor(duration - durationMin * 60);
+          setVidCurrentTime(currentMin + ":" + currentSec);
+          setVidDuration(durationMin + ":" + durationSec);
           const progressPercent = (currentTime / duration) * 100;
           vidProgressBar.style.width = `${progressPercent}%`;
           if (video.ended) {
@@ -98,28 +99,21 @@ End REF
         const handleFullscreen = function () {
           // If fullscreen mode is active...
           if (isFullScreen()) {
-            // ...exit fullscreen mode
-            // (Note: this can only be called on document)
             if (document.exitFullscreen) document.exitFullscreen();
             else if (document.mozCancelFullScreen)
               document.mozCancelFullScreen();
             else if (document.webkitCancelFullScreen)
               document.webkitCancelFullScreen();
             else if (document.msExitFullscreen) document.msExitFullscreen();
-            // setFullscreenData(false);
           } else {
-            // ...otherwise enter fullscreen mode
-            // (Note: can be called on document, but here the specific element is used as it will also ensure that the element's children, e.g. the custom controls, go fullscreen also)
-            if (video.requestFullscreen) video.requestFullscreen();
-            else if (video.mozRequestFullScreen) video.mozRequestFullScreen();
-            else if (video.webkitRequestFullScreen) {
-              // Safari 5.1 only allows proper fullscreen on the video element. This also works fine on other WebKit browsers as the following CSS (set in styles.css) hides the default controls that appear again, and
-              // ensures that our custom controls are visible:
-              // figure[data-fullscreen=true] video::-webkit-media-controls { display:none !important; }
-              // figure[data-fullscreen=true] .controls { z-index:2147483647; }
-              video.webkitRequestFullScreen();
-            } else if (video.msRequestFullscreen) video.msRequestFullscreen();
-            // setFullscreenData(true);
+            if (containerExpand.requestFullscreen)
+              containerExpand.requestFullscreen();
+            else if (containerExpand.mozRequestFullScreen)
+              containerExpand.mozRequestFullScreen();
+            else if (containerExpand.webkitRequestFullScreen) {
+              containerExpand.webkitRequestFullScreen();
+            } else if (containerExpand.msRequestFullscreen)
+              containerExpand.msRequestFullscreen();
           }
         };
 
@@ -157,31 +151,34 @@ End REF
       <div className="h100 d-flex align-items-center">
         <div className="container main-container">
           <figure
-            className="bg-light"
+            className="bg-dark d-flex flex-column justify-content-center"
             data-fullscreen="false"
             ref={containerRef}
           >
             <video id="vid" className="w-100" controls={false} ref={vidRef}>
               <source src="video/tears-of-steel-battle-clip-medium.mp4" />
             </video>
-            <figcaption>
+            <figcaption className="bg-white">
               <div className="progress-container p-2">
                 <div className="progress rounded-0" ref={vidProgressRef}>
                   <div
                     className="progress-bar-striped video-progress bg-info"
                     ref={vidProgressBarRef}
-                  ></div>
+                  >
+                    <span className="tooltiptext rounded-0 py-0 px-1 btn fs-6 ">
+                      {vidCurrentTime}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="d-flex fs-6 all-control justify-content-evenly align-items-center p-2">
+              <div className="d-flex fs-6 all-control justify-content-evenly align-items-center py-0 p-2">
                 {/* Start controls */}
-                <div className="main-controls  d-flex">
+                <div className="main-controls align-items-center  d-flex">
                   <div className="controls">
                     <button className="btn">
                       <i className="fas fa-fast-backward" id="backward"></i>
                     </button>
                   </div>
-
                   <div className="controls">
                     <button
                       className="btn"
@@ -195,11 +192,13 @@ End REF
                       )}
                     </button>
                   </div>
-
                   <div className="controls">
                     <button className="btn">
                       <i className="fas fa-fast-forward"></i>
                     </button>
+                  </div>
+                  <div className="controls btn">
+                    {vidCurrentTime}/{vidDuration}
                   </div>
                 </div>
                 {/*-------------------- Seperate controls ----------- */}
