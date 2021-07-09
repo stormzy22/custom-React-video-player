@@ -1,0 +1,42 @@
+.h100 {
+  height: 100vh;
+  .main-container {
+    height: 70vh;
+    figure {
+      figcaption {
+        .progress-container {
+          .progress {
+            height: 10px;
+            .video-progress {
+              transition: all 0.2s;
+            }
+          }
+        }
+        .all-control {
+          .volume-control {
+            &-main {
+              .volume-progress {
+                height: 10px;
+                .volume-progress-bar {
+                  transition: all 0.5s;
+                  position: relative;
+                  overflow: hidden;
+                  &::after {
+                    content: "";
+                    top: 0;
+                    right: 0;
+                    height: 100%;
+                    width: 5px;
+                    background-color: white;
+                    position: absolute;
+                    cursor: col-resize;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
