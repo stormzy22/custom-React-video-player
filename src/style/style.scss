@@ -3,7 +3,11 @@
   .main-container {
     height: 70vh;
     figure {
+      video::-webkit-media-controls {
+        display: none !important;
+      }
       figcaption {
+        z-index: 99999999999999999999;
         .progress-container {
           .progress {
             height: 10px;
@@ -36,6 +40,11 @@
             }
           }
         }
+      }
+    }
+    figure[data-fullscreen="false"] {
+      figcaption {
+        z-index: 100000000000000;
       }
     }
   }
