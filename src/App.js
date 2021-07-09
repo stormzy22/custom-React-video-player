@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, memo } from "react";
 
-function App() {
+const App = memo(() => {
   const [playPause, setPlayPause] = useState(true);
 
   const vidRef = useRef();
@@ -11,6 +11,24 @@ function App() {
   const vidProgressBarRef = useRef();
   const muteRef = useRef();
   const [mute, setMute] = useState(false);
+
+  useEffect(() => {
+    (function () {
+      const vidState = vidRef.current;
+      if (vidState.muted) {
+        setMute(true);
+      } else {
+        setMute(false);
+      }
+      if (vidState.paused) {
+        console.log("paused");
+        setPlayPause(true);
+      } else {
+        console.log("play");
+        setPlayPause(false);
+      }
+    })();
+  });
 
   useEffect(() => {
     (function () {
@@ -34,7 +52,7 @@ function App() {
         const width = this.clientWidth;
         // console.log(width);
         const clickX = e.offsetX;
-        console.log(clickX);
+        // console.log(clickX);
         const duration = video.duration;
 
         video.currentTime = (clickX / width) * duration;
@@ -47,7 +65,7 @@ function App() {
       function alterVidVolumeBar(e) {
         const videoVolume = Math.round(video.volume * 100);
         volumeBar.style.width = `${videoVolume}%`;
-        console.log(videoVolume);
+        // console.log(videoVolume);
       }
 
       // handle Volume
@@ -85,7 +103,7 @@ function App() {
       <div className="h100 d-flex align-items-center">
         <div className="container main-container">
           <figure className="bg-light">
-            <video id="video" className="w-100" ref={vidRef}>
+            <video id="vid" className="w-100" ref={vidRef}>
               <source src="video/sintel-short.mp4" />
             </video>
             <figcaption>
@@ -164,6 +182,6 @@ function App() {
       </div>
     </div>
   );
-}
+});
 
 export default App;
