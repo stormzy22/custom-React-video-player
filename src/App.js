@@ -1,6 +1,6 @@
-import React, { memo, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-const App = memo(() => {
+const App = () => {
   const [playPause, setPlayPause] = useState(true);
   const [vidCurrentTime, setVidCurrentTime] = useState("--");
   const [vidDuration, setVidDuration] = useState("--");
@@ -14,20 +14,12 @@ const App = memo(() => {
   const muteRef = useRef();
   const zoomRef = useRef();
   const containerRef = useRef();
-  const [mute, setMute] = useState(false);
-
-  useEffect(() =>
-    (function () {
-      const vidState = vidRef.current;
-      if (vidState.muted) {
-        setMute(true);
-      } else {
-        setMute(false);
-      }
-    })()
-  );
-  useEffect(() => {
-    //Obtaining Handlers
+  const forwardRef = useRef();
+  const backwardRef = useRef();
+  const [mute, setMute] = useState();
+  // ----------------------------------------
+  // ---------------------------------------
+  const CustomVideo = () => {
     const video = vidRef.current;
     const play_Pause_Btn = play_Pause_Ref.current;
     const volume = volumeRef.current;
@@ -37,113 +29,128 @@ const App = memo(() => {
     const volMute = muteRef.current;
     const zoomBtn = zoomRef.current;
     const containerExpand = containerRef.current;
-    (function () {
-      // Check if the browser actually support the video element?
-      const supportsVideo = !!document.createElement("video").canPlayType;
-      if (supportsVideo) {
-        function updateProgress(e) {
-          const { duration, currentTime } = e.srcElement;
-          const currentMin = Math.floor(currentTime / 60);
-          const currentSec = Math.floor(currentTime - currentMin * 60);
-          const durationMin = Math.floor(duration / 60);
-          const durationSec = Math.floor(duration - durationMin * 60);
-          setVidCurrentTime(currentMin + ":" + currentSec);
-          setVidDuration(durationMin + ":" + durationSec);
-          const progressPercent = (currentTime / duration) * 100;
-          vidProgressBar.style.width = `${progressPercent}%`;
-          if (video.ended) {
-            setPlayPause(true);
-          }
+    const forwardBtn = forwardRef.current;
+    const backwardBtn = backwardRef.current;
+    const supportsVideo = !!document.createElement("video").canPlayType;
+    if (supportsVideo) {
+      function updateProgress(e) {
+        const { duration, currentTime } = e.srcElement;
+        const currentHrs = Math.floor(currentTime / 3600);
+        const durationHrs = Math.floor(duration / 3600);
+        // console.log(duration);
+        const currentMin = Math.floor(currentTime / 60);
+        const currentSec = Math.floor(currentTime - currentMin * 60);
+        const durationMin = Math.floor(duration / 60);
+        const durationSec = Math.floor(duration - durationMin * 60);
+        setVidCurrentTime(currentHrs + ":" + currentMin + ":" + currentSec);
+        setVidDuration(durationHrs + ":" + durationMin + ":" + durationSec);
+        const progressPercent = (currentTime / duration) * 100;
+        vidProgressBar.style.width = `${progressPercent}%`;
+        if (video.ended) {
+          setPlayPause(true);
         }
-        function setProgress(e) {
-          const width = this.clientWidth;
-          // console.log(width);
-          const clickX = e.offsetX;
-          // console.log(clickX);
-          const duration = video.duration;
-
-          video.currentTime = (clickX / width) * duration;
-        }
-        function alterVolume(e) {
-          const width = this.clientWidth;
-          const clickX = e.offsetX;
-          video.volume = Number((clickX / width).toFixed(2));
-        }
-        function alterVidVolumeBar(e) {
-          const videoVolume = Math.round(video.volume * 100);
-          volumeBar.style.width = `${videoVolume}%`;
-          // console.log(videoVolume);
-        }
-        function playAndPause() {
-          if (video.paused || video.ended) {
-            setPlayPause(false);
-            video.play();
-          } else {
-            setPlayPause(true);
-            video.pause();
-          }
-        }
-
-        //------------Full screen--------------
-        // Checks if the document is currently in fullscreen mode
-        const isFullScreen = function () {
-          return !!(
-            document.fullScreen ||
-            document.webkitIsFullScreen ||
-            document.mozFullScreen ||
-            document.msFullscreenElement ||
-            document.fullscreenElement
-          );
-        };
-        // Fullscreen
-        const handleFullscreen = function () {
-          // If fullscreen mode is active...
-          if (isFullScreen()) {
-            if (document.exitFullscreen) document.exitFullscreen();
-            else if (document.mozCancelFullScreen)
-              document.mozCancelFullScreen();
-            else if (document.webkitCancelFullScreen)
-              document.webkitCancelFullScreen();
-            else if (document.msExitFullscreen) document.msExitFullscreen();
-          } else {
-            if (containerExpand.requestFullscreen)
-              containerExpand.requestFullscreen();
-            else if (containerExpand.mozRequestFullScreen)
-              containerExpand.mozRequestFullScreen();
-            else if (containerExpand.webkitRequestFullScreen) {
-              containerExpand.webkitRequestFullScreen();
-            } else if (containerExpand.msRequestFullscreen)
-              containerExpand.msRequestFullscreen();
-          }
-        };
-
-        // -----------------------------------------
-        // handle Volume
-        volume.addEventListener("click", alterVolume);
-        volume.addEventListener("click", alterVidVolumeBar);
-        window.addEventListener("load", alterVidVolumeBar);
-        //handle the volume
-        volMute.addEventListener("click", () => {
-          video.muted = !video.muted;
-          if (video.muted) {
-            volumeBar.style.display = "none";
-          } else {
-            volumeBar.style.display = "block";
-          }
-          setMute(video.muted);
-        });
-        //toggle play and pause state
-        play_Pause_Btn.addEventListener("click", playAndPause);
-        //update video progress
-        video.addEventListener("timeupdate", updateProgress);
-        vidProgress.addEventListener("click", setProgress);
-        //set keyBoard control
-        navigator.mediaSession.setActionHandler("play", playAndPause);
-        navigator.mediaSession.setActionHandler("pause", playAndPause);
-        //Handle full screen
-        zoomBtn.addEventListener("click", handleFullscreen);
       }
-    })();
+      function setProgress(e) {
+        const width = this.clientWidth;
+        const clickX = e.offsetX;
+        const duration = video.duration;
+        video.currentTime = (clickX / width) * duration;
+      }
+      function alterVolume(e) {
+        video.muted = false;
+        setMute(video.muted);
+        const width = this.clientWidth;
+        const clickX = e.offsetX;
+        video.volume = Number((clickX / width).toFixed(2));
+      }
+      function alterVidVolumeBar(e) {
+        const videoVolume = Math.round(video.volume * 100);
+        volumeBar.style.width = `${videoVolume}%`;
+      }
+      function playAndPause() {
+        const vidState = video.paused || video.ended;
+        if (vidState) {
+          setPlayPause(false);
+          video.play();
+        }
+        if (!vidState) {
+          setPlayPause(true);
+          video.pause();
+        }
+      }
+      function forwardVideo() {
+        let num = 1;
+        let time = [];
+        for (let i = 0; i <= video.duration; i++) {
+          time.push(i);
+        }
+        video.currentTime += time[num + 1];
+      }
+      function backwardVideo() {
+        video.currentTime += -10;
+      }
+      // Checks if the document is currently in fullscreen mode
+      const isFullScreen = function () {
+        return !!(
+          document.fullScreen ||
+          document.webkitIsFullScreen ||
+          document.mozFullScreen ||
+          document.msFullscreenElement ||
+          document.fullscreenElement
+        );
+      };
+      // Fullscreen
+      const handleFullscreen = function () {
+        // If fullscreen mode is active...
+        if (isFullScreen()) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+          else if (document.webkitCancelFullScreen)
+            document.webkitCancelFullScreen();
+          else if (document.msExitFullscreen) document.msExitFullscreen();
+        } else {
+          if (containerExpand.requestFullscreen)
+            containerExpand.requestFullscreen();
+          else if (containerExpand.mozRequestFullScreen)
+            containerExpand.mozRequestFullScreen();
+          else if (containerExpand.webkitRequestFullScreen) {
+            containerExpand.webkitRequestFullScreen();
+          } else if (containerExpand.msRequestFullscreen)
+            containerExpand.msRequestFullscreen();
+        }
+      };
+
+      // -----------------------------------------
+      // handle Volume
+      volume.addEventListener("click", alterVolume);
+      volume.addEventListener("click", alterVidVolumeBar);
+      window.addEventListener("load", alterVidVolumeBar);
+      video.addEventListener("volumechange", alterVidVolumeBar);
+      //handle the mute volume
+      volMute.addEventListener("click", () => {
+        video.muted = !video.muted;
+        setMute(video.muted);
+      });
+      //toggle play and pause state
+      play_Pause_Btn.addEventListener("click", playAndPause);
+      //update video progress
+      video.addEventListener("timeupdate", updateProgress);
+      vidProgress.addEventListener("click", setProgress);
+      //seek foward and backward
+      backwardBtn.addEventListener("click", backwardVideo);
+      forwardBtn.addEventListener("click", forwardVideo);
+      navigator.mediaSession.setActionHandler("previoustrack", backwardVideo);
+      navigator.mediaSession.setActionHandler("nexttrack", forwardVideo);
+      //set keyBoard control
+      navigator.mediaSession.setActionHandler("play", playAndPause);
+      navigator.mediaSession.setActionHandler("pause", playAndPause);
+      //Handle full screen
+      zoomBtn.addEventListener("click", handleFullscreen);
+    }
+  };
+
+  useEffect(() => {
+    CustomVideo();
   }, []);
 
   return (
@@ -175,7 +182,7 @@ const App = memo(() => {
                 {/* Start controls */}
                 <div className="main-controls align-items-center  d-flex">
                   <div className="controls">
-                    <button className="btn">
+                    <button className="btn" ref={backwardRef}>
                       <i className="fas fa-fast-backward" id="backward"></i>
                     </button>
                   </div>
@@ -193,11 +200,11 @@ const App = memo(() => {
                     </button>
                   </div>
                   <div className="controls">
-                    <button className="btn">
+                    <button className="btn" ref={forwardRef}>
                       <i className="fas fa-fast-forward"></i>
                     </button>
                   </div>
-                  <div className="controls btn">
+                  <div className="controls btn p-0">
                     {vidCurrentTime}/{vidDuration}
                   </div>
                 </div>
@@ -239,6 +246,6 @@ const App = memo(() => {
       </div>
     </div>
   );
-});
+};
 
 export default App;
